@@ -149,8 +149,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 //get the extras that are returned from the intent
                 String contents = intent.getStringExtra("SCAN_RESULT");
                 String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-                Toast toast = Toast.makeText(getActivity(), "Content:" + contents + " Format:" + format, Toast.LENGTH_LONG);
-                toast.show();
+                ean.setText(contents);
             }
         }
     }
