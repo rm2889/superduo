@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +16,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,15 +83,27 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                     ean = "978" + ean;
                 }
                 if (ean.length() < 13) {
-                    clearFields();
+//                    clearFields();
                     return;
                 }
-                //Once we have an ISBN, start a book intent
-                Intent bookIntent = new Intent(getActivity(), BookService.class);
-                bookIntent.putExtra(BookService.EAN, ean);
-                bookIntent.setAction(BookService.FETCH_BOOK);
-                getActivity().startService(bookIntent);
-                AddBook.this.restartLoader();
+
+                if (ean.length()==13) {
+                    clearFields();
+                    if (isNetworkAvailable(getActivity())) {
+
+                        //Once we have an ISBN, start a book intent
+                        Intent bookIntent = new Intent(getActivity(), BookService.class);
+                        bookIntent.putExtra(BookService.EAN, ean);
+                        bookIntent.setAction(BookService.FETCH_BOOK);
+                        getActivity().startService(bookIntent);
+                        AddBook.this.restartLoader();
+                    }
+                    else {
+                        Toast.makeText(getActivity(),"No Internet connection - try again after reconnecting!",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+
             }
         });
 
@@ -166,7 +181,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 try {
                     act.startActivity(intent);
                 } catch (ActivityNotFoundException anfe) {
-
+                    Log.v("DownloadScannerError",anfe.toString());
                 }
             }
         });
@@ -180,6 +195,8 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     private void restartLoader() {
         getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
+
+
 
     @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -232,6 +249,13 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     @Override
     public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
 
+    }
+
+    static public boolean isNetworkAvailable(Context c) {
+        ConnectivityManager cm =
+                (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
     private void clearFields() {
