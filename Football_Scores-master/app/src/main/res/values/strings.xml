@@ -38,8 +38,8 @@
 
     <string name="a11y_home_name">Home team name: <xliff:g id="home_name">%1$s</xliff:g></string>
     <string name="a11y_away_name">Away team name: <xliff:g id="away_name">%1$s</xliff:g></string>
-    <string name="a11y_home_crest"> <xliff:g id="home_crest">%1$s</xliff:g>'s team crest:</string>
-    <string name="a11y_away_crest"> <xliff:g id="away_crest">%1$s</xliff:g>'s team crest:</string>
+    <string name="a11y_home_crest"> <xliff:g id="home_crest">%1$s</xliff:g>\'s team crest:</string>
+    <string name="a11y_away_crest"> <xliff:g id="away_crest">%1$s</xliff:g>\'s team crest:</string>
     <string name="a11y_match_date">Match date: <xliff:g id="match_date">%1$s</xliff:g></string>
     <string name="a11y_match_score">Match score: Home-Away <xliff:g id="home_name">%1$s</xliff:g></string>
 
