@@ -1,11 +1,16 @@
 package barqsoft.footballscores.service;
 
 import android.app.IntentService;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,7 +28,9 @@ import java.util.TimeZone;
 import java.util.Vector;
 
 import barqsoft.footballscores.DatabaseContract;
+import barqsoft.footballscores.MainActivity;
 import barqsoft.footballscores.R;
+import barqsoft.footballscores.widget.ScoreWidgetProvider;
 
 /**
  * Created by yehya khaled on 3/2/2015.
@@ -279,7 +286,59 @@ public class myFetchService extends IntentService
             inserted_data = mContext.getContentResolver().bulkInsert(
                     DatabaseContract.BASE_CONTENT_URI,insert_data);
 
-            //Log.v(LOG_TAG,"Succesfully Inserted : " + String.valueOf(inserted_data));
+//            data is inserted, now query to get info for matches in bundesliga3 so that you can update the widget
+
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(this, ScoreWidgetProvider.class));
+
+            Cursor bundesliga3Cursor = mContext.getContentResolver().query(
+                    DatabaseContract.BASE_CONTENT_URI,
+                    null,
+                    DatabaseContract.scores_table.LEAGUE_COL + "= ? ",
+                    new String[]{Bundesliga3},
+                    null
+            );
+
+            if (!bundesliga3Cursor.moveToFirst()) {
+                bundesliga3Cursor.close();
+                return;
+            }
+
+//            displaying the data for just the first game, for simplicity!
+
+            String homeName = bundesliga3Cursor.getString(bundesliga3Cursor.getColumnIndex(DatabaseContract.scores_table.HOME_COL));
+
+            String awayName = bundesliga3Cursor.getString(bundesliga3Cursor.getColumnIndex(DatabaseContract.scores_table.AWAY_COL));
+
+            String homeGoals = bundesliga3Cursor.getString(bundesliga3Cursor.getColumnIndex(DatabaseContract.scores_table.HOME_GOALS_COL));
+
+            String awayGoals = bundesliga3Cursor.getString(bundesliga3Cursor.getColumnIndex(DatabaseContract.scores_table.AWAY_GOALS_COL));
+
+            String time = bundesliga3Cursor.getString(bundesliga3Cursor.getColumnIndex(DatabaseContract.scores_table.TIME_COL));
+
+            bundesliga3Cursor.close();
+
+            for (int appWidgetId : appWidgetIds) {
+                int layoutId = R.layout.widget_today_small;
+                RemoteViews views = new RemoteViews(getPackageName(), layoutId);
+
+                views.setTextViewText(R.id.widget_home_name,homeName);
+                views.setTextViewText(R.id.widget_away_name,awayName);
+                views.setTextViewText(R.id.widget_score_textview,homeGoals + "-" + awayGoals);
+                views.setTextViewText(R.id.widget_data_textview,time);
+
+                Intent launchIntent = new Intent(this, MainActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getActivity(this,0,launchIntent,0);
+                views.setOnClickPendingIntent(R.id.widget, pendingIntent);
+
+                Log.v("Widget",homeName);
+                Log.v("Widget",awayName);
+                Log.v("Widget",homeGoals);
+                Log.v("Widget",awayGoals);
+
+                appWidgetManager.updateAppWidget(appWidgetId, views);
+            }
+
         }
         catch (JSONException e)
         {
