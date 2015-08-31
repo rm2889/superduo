@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -38,11 +40,20 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     private final int LOADER_ID = 1;
     private View rootView;
     private final String EAN_CONTENT = "eanContent";
+    private static final String BITMAP_IMAGE = "bitmap";
+
     private static final String SCAN_FORMAT = "scanFormat";
     private static final String SCAN_CONTENTS = "scanContents";
 
     private String mScanFormat = "Format:";
     private String mScanContents = "Contents:";
+
+    private String mBookTitle;
+    private String mBookSubtitle;
+    private String mAuthors;
+    private String mImageUrl;
+    private String mCategories;
+    private Bitmap mBookCoverImageBitmap;
 
     static final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
 
@@ -56,10 +67,15 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         if (ean != null) {
             outState.putString(EAN_CONTENT, ean.getText().toString());
         }
+        ImageView tempImageView = (ImageView) getView().findViewById(R.id.bookCover);
+        if (tempImageView.getDrawable() != null) {
+            mBookCoverImageBitmap = ((BitmapDrawable) tempImageView.getDrawable()).getBitmap();
+            outState.putParcelable(BITMAP_IMAGE, mBookCoverImageBitmap);
+        }
     }
 
     @Override
-    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_add_book, container, false);
         ean = (EditText) rootView.findViewById(R.id.ean);
@@ -87,7 +103,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                     return;
                 }
 
-                if (ean.length()==13) {
+                if (ean.length() == 13) {
                     clearFields();
                     if (isNetworkAvailable(getActivity())) {
 
@@ -96,12 +112,12 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                         bookIntent.putExtra(BookService.EAN, ean);
                         bookIntent.setAction(BookService.FETCH_BOOK);
                         getActivity().startService(bookIntent);
-                        AddBook.this.restartLoader();
+                    } else {
+                        if (savedInstanceState == null) {
+                            Toast.makeText(getActivity(), "No Internet connection - try again after reconnecting!", Toast.LENGTH_LONG).show();
+                        }
                     }
-                    else {
-                        Toast.makeText(getActivity(),"No Internet connection - try again after reconnecting!",Toast.LENGTH_LONG).show();
-                        return;
-                    }
+                    AddBook.this.restartLoader();
                 }
 
             }
@@ -152,6 +168,39 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         if (savedInstanceState != null) {
             ean.setText(savedInstanceState.getString(EAN_CONTENT));
             ean.setHint("");
+            if (savedInstanceState.getParcelable(BITMAP_IMAGE) != null) {
+                mBookCoverImageBitmap = savedInstanceState.getParcelable(BITMAP_IMAGE);
+            }
+
+
+//            mBookTitle = savedInstanceState.getString(BOOK_TITLE);
+//            TextView title = (TextView)rootView.findViewById(R.id.bookTitle);
+//            title.setText(mBookTitle);
+//
+//            mBookSubtitle = savedInstanceState.getString(BOOK_SUBTITLE);
+//            TextView subtitle = (TextView)rootView.findViewById(R.id.bookSubTitle);
+//            subtitle.setText(mBookSubtitle);
+//
+//            mAuthors = savedInstanceState.getString(AUTHORS);
+//            if (mAuthors != null) {
+//                String[] authorsArr = mAuthors.split(",");
+//                ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
+//                ((TextView) rootView.findViewById(R.id.authors)).setText(mAuthors.replace(",", "\n"));
+//            }
+//
+//            mImageUrl = savedInstanceState.getString(IMAGE_URL);
+//            if (mImageUrl != null) {
+//                if (Patterns.WEB_URL.matcher(mImageUrl).matches()) {
+//                    new DownloadImage((ImageView) rootView.findViewById(R.id.bookCover)).execute(mImageUrl);
+//                    rootView.findViewById(R.id.bookCover).setVisibility(View.VISIBLE);
+//                }
+//            }
+//
+//            mCategories = savedInstanceState.getString(CATEGORIES);
+//            ((TextView) rootView.findViewById(R.id.categories)).setText(mCategories);
+//
+//            rootView.findViewById(R.id.save_button).setVisibility(View.VISIBLE);
+//            rootView.findViewById(R.id.delete_button).setVisibility(View.VISIBLE);
         }
 
         return rootView;
@@ -181,7 +230,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
                 try {
                     act.startActivity(intent);
                 } catch (ActivityNotFoundException anfe) {
-                    Log.v("DownloadScannerError",anfe.toString());
+                    Log.v("DownloadScannerError", anfe.toString());
                 }
             }
         });
@@ -195,8 +244,6 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
     private void restartLoader() {
         getLoaderManager().restartLoader(LOADER_ID, null, this);
     }
-
-
 
     @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -223,24 +270,32 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
             return;
         }
 
-        String bookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
-        ((TextView) rootView.findViewById(R.id.bookTitle)).setText(bookTitle);
+        mBookTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.TITLE));
+        ((TextView) rootView.findViewById(R.id.bookTitle)).setText(mBookTitle);
 
-        String bookSubTitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
-        ((TextView) rootView.findViewById(R.id.bookSubTitle)).setText(bookSubTitle);
+        mBookSubtitle = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.SUBTITLE));
+        ((TextView) rootView.findViewById(R.id.bookSubTitle)).setText(mBookSubtitle);
 
-        String authors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = authors.split(",");
+        mAuthors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
+        String[] authorsArr = mAuthors.split(",");
         ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
-        ((TextView) rootView.findViewById(R.id.authors)).setText(authors.replace(",", "\n"));
-        String imgUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
-        if (Patterns.WEB_URL.matcher(imgUrl).matches()) {
-            new DownloadImage((ImageView) rootView.findViewById(R.id.bookCover)).execute(imgUrl);
-            rootView.findViewById(R.id.bookCover).setVisibility(View.VISIBLE);
+        ((TextView) rootView.findViewById(R.id.authors)).setText(mAuthors.replace(",", "\n"));
+        mImageUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
+        if (isNetworkAvailable(getActivity())) {
+            if (Patterns.WEB_URL.matcher(mImageUrl).matches()) {
+                ImageView bookCoverImageView = (ImageView) rootView.findViewById(R.id.bookCover);
+                new DownloadImage(bookCoverImageView).execute(mImageUrl);
+            }
+        } else {
+            if (mBookCoverImageBitmap != null) {
+                ((ImageView) rootView.findViewById(R.id.bookCover)).setImageBitmap(mBookCoverImageBitmap);
+            }
         }
 
-        String categories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
-        ((TextView) rootView.findViewById(R.id.categories)).setText(categories);
+        rootView.findViewById(R.id.bookCover).setVisibility(View.VISIBLE);
+
+        mCategories = data.getString(data.getColumnIndex(AlexandriaContract.CategoryEntry.CATEGORY));
+        ((TextView) rootView.findViewById(R.id.categories)).setText(mCategories);
 
         rootView.findViewById(R.id.save_button).setVisibility(View.VISIBLE);
         rootView.findViewById(R.id.delete_button).setVisibility(View.VISIBLE);
@@ -253,7 +308,7 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
 
     static public boolean isNetworkAvailable(Context c) {
         ConnectivityManager cm =
-                (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+                (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
     }
