@@ -171,36 +171,6 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
             if (savedInstanceState.getParcelable(BITMAP_IMAGE) != null) {
                 mBookCoverImageBitmap = savedInstanceState.getParcelable(BITMAP_IMAGE);
             }
-
-
-//            mBookTitle = savedInstanceState.getString(BOOK_TITLE);
-//            TextView title = (TextView)rootView.findViewById(R.id.bookTitle);
-//            title.setText(mBookTitle);
-//
-//            mBookSubtitle = savedInstanceState.getString(BOOK_SUBTITLE);
-//            TextView subtitle = (TextView)rootView.findViewById(R.id.bookSubTitle);
-//            subtitle.setText(mBookSubtitle);
-//
-//            mAuthors = savedInstanceState.getString(AUTHORS);
-//            if (mAuthors != null) {
-//                String[] authorsArr = mAuthors.split(",");
-//                ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
-//                ((TextView) rootView.findViewById(R.id.authors)).setText(mAuthors.replace(",", "\n"));
-//            }
-//
-//            mImageUrl = savedInstanceState.getString(IMAGE_URL);
-//            if (mImageUrl != null) {
-//                if (Patterns.WEB_URL.matcher(mImageUrl).matches()) {
-//                    new DownloadImage((ImageView) rootView.findViewById(R.id.bookCover)).execute(mImageUrl);
-//                    rootView.findViewById(R.id.bookCover).setVisibility(View.VISIBLE);
-//                }
-//            }
-//
-//            mCategories = savedInstanceState.getString(CATEGORIES);
-//            ((TextView) rootView.findViewById(R.id.categories)).setText(mCategories);
-//
-//            rootView.findViewById(R.id.save_button).setVisibility(View.VISIBLE);
-//            rootView.findViewById(R.id.delete_button).setVisibility(View.VISIBLE);
         }
 
         return rootView;

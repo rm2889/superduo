@@ -46,4 +46,9 @@
     <string name="a11y_match_day">Match day: <xliff:g id="match_day">%1$s</xliff:g></string>
     <string name="a11y_league_name">League name: <xliff:g id="league_name">%1$s</xliff:g></string>
     <string name="a11y_share_button">Share button</string>
+
+    <string name="a11y_widget_home_name">Home team name</string>
+    <string name="a11y_widget_score">Score</string>
+    <string name="a11y_widget_match_time">Match time</string>
+    <string name="a11y_widget_away_name">Away team name</string>
 </resources>

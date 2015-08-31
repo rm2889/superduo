@@ -324,8 +324,14 @@ public class myFetchService extends IntentService
 
                 views.setTextViewText(R.id.widget_home_name,homeName);
                 views.setTextViewText(R.id.widget_away_name,awayName);
-                views.setTextViewText(R.id.widget_score_textview,homeGoals + "-" + awayGoals);
-                views.setTextViewText(R.id.widget_data_textview,time);
+                if (homeGoals.equals("-1")) {
+                    views.setTextViewText(R.id.widget_score_textview,"0-0");
+                    views.setTextViewText(R.id.widget_data_textview,time);
+                } else {
+                    views.setTextViewText(R.id.widget_score_textview,homeGoals + "-" + awayGoals);
+                    views.setTextViewText(R.id.widget_data_textview,time);
+                }
+
 
                 Intent launchIntent = new Intent(this, MainActivity.class);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this,0,launchIntent,0);

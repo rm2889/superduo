@@ -25,7 +25,8 @@
                 android:textSize="@dimen/TeamNames"
                 android:gravity="center"
                 android:text="@string/test_text"
-                android:id="@+id/widget_home_name" />
+                android:id="@+id/widget_home_name"
+                android:contentDescription="@string/a11y_widget_home_name"/>
         </LinearLayout>
 
         <LinearLayout
@@ -42,7 +43,8 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:textSize="@dimen/Score"
-                android:id="@+id/widget_score_textview" />
+                android:id="@+id/widget_score_textview"
+                android:contentDescription="@string/a11y_widget_score"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -51,7 +53,8 @@
                 android:text="@string/test_text"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:id="@+id/widget_data_textview" />
+                android:id="@+id/widget_data_textview"
+                android:contentDescription="@string/a11y_widget_match_time"/>
 
         </LinearLayout>
 
