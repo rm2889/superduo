@@ -67,8 +67,11 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         if (ean != null) {
             outState.putString(EAN_CONTENT, ean.getText().toString());
         }
-        ImageView tempImageView = (ImageView) getView().findViewById(R.id.bookCover);
-        if (tempImageView.getDrawable() != null) {
+        ImageView tempImageView = new ImageView(getActivity());
+        if (getView().findViewById(R.id.bookCover)!=null) {
+            tempImageView = (ImageView)(getView().findViewById(R.id.bookCover));
+        }
+        if ((tempImageView!=null ) && (tempImageView.getDrawable() != null)) {
             mBookCoverImageBitmap = ((BitmapDrawable) tempImageView.getDrawable()).getBitmap();
             outState.putParcelable(BITMAP_IMAGE, mBookCoverImageBitmap);
         }
@@ -157,10 +160,13 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         rootView.findViewById(R.id.delete_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent bookIntent = new Intent(getActivity(), BookService.class);
-                bookIntent.putExtra(BookService.EAN, ean.getText().toString());
-                bookIntent.setAction(BookService.DELETE_BOOK);
-                getActivity().startService(bookIntent);
+                String eanText = ean.getText().toString();
+                if (!eanText.isEmpty()) {
+                    Intent bookIntent = new Intent(getActivity(), BookService.class);
+                    bookIntent.putExtra(BookService.EAN, ean.getText().toString());
+                    bookIntent.setAction(BookService.DELETE_BOOK);
+                    getActivity().startService(bookIntent);
+                }
                 ean.setText("");
             }
         });
@@ -247,9 +253,11 @@ public class AddBook extends Fragment implements LoaderManager.LoaderCallbacks<C
         ((TextView) rootView.findViewById(R.id.bookSubTitle)).setText(mBookSubtitle);
 
         mAuthors = data.getString(data.getColumnIndex(AlexandriaContract.AuthorEntry.AUTHOR));
-        String[] authorsArr = mAuthors.split(",");
-        ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
-        ((TextView) rootView.findViewById(R.id.authors)).setText(mAuthors.replace(",", "\n"));
+        if ((mAuthors != null) && (!mAuthors.isEmpty())) {
+            String[] authorsArr = mAuthors.split(",");
+            ((TextView) rootView.findViewById(R.id.authors)).setLines(authorsArr.length);
+            ((TextView) rootView.findViewById(R.id.authors)).setText(mAuthors.replace(",", "\n"));
+        }
         mImageUrl = data.getString(data.getColumnIndex(AlexandriaContract.BookEntry.IMAGE_URL));
         if (isNetworkAvailable(getActivity())) {
             if (Patterns.WEB_URL.matcher(mImageUrl).matches()) {
